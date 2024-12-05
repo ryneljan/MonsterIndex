@@ -10,6 +10,8 @@ activityCompose = "1.9.3"
 composeBom = "2024.11.00"
 ktor = "3.0.1"
 hilt = "2.51.1"
+slf4j = "1.7.36"
+simpleSlf4j = "2.0.16"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -28,10 +30,13 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-hilt-android = {module = "com.google.dagger:hilt-android", version.ref = "hilt"}
-hilt-android-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt"}
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
+slf4j = { module = "org.slf4j:slf4j-android", version.ref = "slf4j" }
+simple-slf4j = { module = "org.slf4j:slf4j-simple", version.ref = "simpleSlf4j" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
