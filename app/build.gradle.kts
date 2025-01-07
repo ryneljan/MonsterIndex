@@ -4,7 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization")
     alias(libs.plugins.dagger.hilt.android)
-    id("kotlin-kapt")
+    kotlin("kapt")
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -31,11 +32,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -73,6 +74,13 @@ dependencies {
     implementation(libs.slf4j)
     implementation(libs.simple.slf4j)
 
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+
     implementation(libs.hilt.android)
+
+    implementation(libs.hilt.navigation.compose)
     kapt(libs.hilt.android.compiler)
+
+    ksp(libs.androidx.room.compiler)
 }
