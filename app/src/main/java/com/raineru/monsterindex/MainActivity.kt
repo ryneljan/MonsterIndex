@@ -4,42 +4,71 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.raineru.monsterindex.ui.HomeViewModel
 import com.raineru.monsterindex.ui.theme.MonsterIndexTheme
-import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MonsterIndexTheme {
-                Surface(
+                /*val navController = rememberNavController()
+                NavHost(navController, startDestination = "ExampleRoute") {
+                    composable("ExampleRoute") {
+                        val homeViewModel: HomeViewModel = hiltViewModel()
+                    }
+                }*/
+                Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
                 ) {
-                    val scope = rememberCoroutineScope()
+                    /*val scope = rememberCoroutineScope()
                     var text by remember { mutableStateOf("Loading") }
                     LaunchedEffect(true) {
                         scope.launch {
                             text = try {
-                                Greeting().getGreeting()
+                                pokeApiClient.getPokemonList(1)
+                                    .mapIndexed { i, p ->
+                                        "${i + 1}: ${p.name}"
+                                    }.toString()
                             } catch (e: Exception) {
                                 e.localizedMessage ?: "error"
                             }
                         }
+                    }*/
+
+                    val homeViewModel: HomeViewModel = hiltViewModel()
+                    val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
+                    val pokemonFetchingIndex by homeViewModel.pokemonFetchingIndex.collectAsStateWithLifecycle()
+
+                    Column(modifier = Modifier.padding(it)) {
+                        Button(onClick = { homeViewModel.fetchNextPokemonList() }) {
+                            Text(text = "Page ${pokemonFetchingIndex + 1}")
+                        }
+                        LazyColumn {
+                            items(pokemonList) {
+                                ListItem(
+                                    headlineContent = { Text(it.name) }
+                                )
+                            }
+                        }
                     }
-                    Text(text)
                 }
             }
         }
