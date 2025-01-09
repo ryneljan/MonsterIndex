@@ -83,4 +83,6 @@ dependencies {
     kapt(libs.hilt.android.compiler)
 
     ksp(libs.androidx.room.compiler)
+
+    implementation(libs.glide)
 }
