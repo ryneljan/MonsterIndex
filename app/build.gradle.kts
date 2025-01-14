@@ -85,4 +85,6 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.glide)
+
+    testImplementation(libs.kotlinx.coroutines.test)
 }
