@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
@@ -44,6 +45,9 @@ object DataModule {
                     ignoreUnknownKeys = true
                 }
             )
+        }
+        install(HttpTimeout) {
+            connectTimeoutMillis = 10_000L
         }
     }
 }
