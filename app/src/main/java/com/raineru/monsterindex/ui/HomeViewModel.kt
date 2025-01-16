@@ -38,6 +38,8 @@ class HomeViewModel @Inject constructor(
     )
 
     fun fetchNextPokemonList() {
+        if (_isLoading.value) return
+
         pokemonFetchingIndex.update {
             it + 1
         }
