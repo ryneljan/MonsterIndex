@@ -10,7 +10,8 @@ object PokemonEntityMapper {
             PokemonEntity(
                 page = it.page,
                 name = it.name,
-                url = it.url
+                url = it.url,
+                id = it.id
             )
         }
     }
@@ -20,7 +21,7 @@ object PokemonEntityMapper {
             Pokemon(
                 page = it.page,
                 nameField = it.name,
-                url = it.url
+                url = it.url,
             )
         }
     }
