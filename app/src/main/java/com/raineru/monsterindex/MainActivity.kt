@@ -16,17 +16,17 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,12 +48,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MonsterIndexTheme {
-                /*val navController = rememberNavController()
-                NavHost(navController, startDestination = "ExampleRoute") {
-                    composable("ExampleRoute") {
-                        val homeViewModel: HomeViewModel = hiltViewModel()
-                    }
-                }*/
                 HomeScreen()
             }
         }
@@ -84,33 +78,24 @@ fun CardPreview() {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
+@OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("Monster Index") }
+            )
+        }
     ) {
         val homeViewModel: HomeViewModel = hiltViewModel()
         val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
         val isLoading by homeViewModel.isLoading.collectAsStateWithLifecycle()
-        val pokemonFetchingIndex by homeViewModel.pokemonFetchingIndex.collectAsStateWithLifecycle()
 
         Column(modifier = Modifier.padding(it)) {
-
-            Button(onClick = { homeViewModel.fetchNextPokemonList() }) {
-                Text(text = "Page ${pokemonFetchingIndex + 1}")
-            }
-
             val lazyGridState = rememberLazyGridState()
-
-            LaunchedEffect(lazyGridState) {
-                snapshotFlow { lazyGridState.firstVisibleItemIndex }.collect { index ->
-//                    Log.d("MainActivity", "firstVisibleItemIndex: $index")
-                }
-            }
-
             val threshold = 3
-
             val shouldLoadMore = remember {
                 derivedStateOf {
                     val lastVisibleItem = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()
