@@ -95,7 +95,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
         Column(modifier = Modifier.padding(it)) {
             val lazyGridState = rememberLazyGridState()
-            val threshold = 3
+            val threshold = 10
             val shouldLoadMore = remember {
                 derivedStateOf {
                     val lastVisibleItem = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()
