@@ -33,12 +33,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.raineru.monsterindex.data.Pokemon
 import com.raineru.monsterindex.ui.HomeViewModel
 import com.raineru.monsterindex.ui.theme.MonsterIndexTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -48,7 +53,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MonsterIndexTheme {
-                HomeScreen()
+                val navController = rememberNavController()
+
+                NavHost(
+                    navController = navController,
+                    startDestination = HomeScreen
+                ) {
+                    composable<HomeScreen> {
+                        HomeScreen(
+                            onNavigateToDetail = { id ->
+                                navController.navigate(PokemonDetailScreen(id))
+                            }
+                        )
+                    }
+
+                    composable<PokemonDetailScreen> { backStackEntry ->
+                        val pokemonDetailScreen: PokemonDetailScreen = backStackEntry.toRoute()
+//                        PokemonDetailScreen(pokemonDetailScreen.id)
+                        Scaffold {
+                            Text(
+                                "PokemonDetailScreen - ${pokemonDetailScreen.id}",
+                                modifier = Modifier.padding(it)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -80,7 +109,10 @@ fun CardPreview() {
 
 @OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    onNavigateToDetail: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -115,7 +147,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 items(pokemonList, key = { pokemon -> pokemon.name }) {
                     Card(
                         onClick = {
-//                            Log.d("MainActivity", "clicked: ${it.name}")
+                            onNavigateToDetail(it.id)
                         },
 //                                    modifier = Modifier.wrapContentSize()
                     ) {
@@ -152,3 +184,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         }
     }
 }
+
+@Serializable
+object HomeScreen
+
+@Serializable
+data class PokemonDetailScreen(val id: Int)
