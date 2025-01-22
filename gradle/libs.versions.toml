@@ -17,6 +17,8 @@ hiltNavigationCompose = "1.2.0"
 ksp = "2.0.21-1.0.27"
 glide = "1.0.0-beta01"
 coroutines-test = "1.10.1"
+navigationVersion = "2.8.5"
+kotlinxSerializationJson = "1.7.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +50,8 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 glide = { module = "com.github.bumptech.glide:compose", version.ref = "glide" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-test" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationVersion" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
