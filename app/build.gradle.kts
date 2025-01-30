@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization")
+    id("kotlin-parcelize")
     alias(libs.plugins.dagger.hilt.android)
     kotlin("kapt")
     alias(libs.plugins.devtools.ksp)
