@@ -40,10 +40,12 @@ import androidx.navigation.toRoute
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.raineru.monsterindex.data.Pokemon
+import com.raineru.monsterindex.data.PokemonType
 import com.raineru.monsterindex.ui.HomeViewModel
 import com.raineru.monsterindex.ui.theme.MonsterIndexTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
+import kotlin.reflect.typeOf
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -57,28 +59,56 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = HomeScreen
+                    startDestination = HomeRoute
                 ) {
-                    composable<HomeScreen> {
+                    composable<HomeRoute> {
                         HomeScreen(
-                            onNavigateToDetail = { id ->
-                                navController.navigate(PokemonDetailScreen(id))
+                            onNavigateToDetail = {
+                                navController.navigate(PokemonDetailRoute(it))
                             }
                         )
                     }
 
-                    composable<PokemonDetailScreen> { backStackEntry ->
-                        val pokemonDetailScreen: PokemonDetailScreen = backStackEntry.toRoute()
-//                        PokemonDetailScreen(pokemonDetailScreen.id)
+                    composable<PokemonDetailRoute>(
+                        typeMap = mapOf(
+                            typeOf<Pokemon>() to PokemonType
+                        )
+                    ) { backStackEntry ->
+                        val route: PokemonDetailRoute = backStackEntry.toRoute()
+
                         Scaffold {
-                            Text(
-                                "PokemonDetailScreen - ${pokemonDetailScreen.id}",
+                            PokemonDetailScreen(
+                                pokemon = route.pokemon,
                                 modifier = Modifier.padding(it)
                             )
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun PokemonDetailScreen(
+    pokemon: Pokemon,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            GlideImage(
+                model = pokemon.imageUrl,
+                contentDescription = pokemon.name,
+//                modifier = Modifier.size(100.dp)
+            )
+            Text(
+                pokemon.name,
+            )
         }
     }
 }
@@ -110,7 +140,7 @@ fun CardPreview() {
 @OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToDetail: (Int) -> Unit,
+    onNavigateToDetail: (Pokemon) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -147,7 +177,7 @@ fun HomeScreen(
                 items(pokemonList, key = { pokemon -> pokemon.name }) {
                     Card(
                         onClick = {
-                            onNavigateToDetail(it.id)
+                            onNavigateToDetail(it)
                         },
 //                                    modifier = Modifier.wrapContentSize()
                     ) {
@@ -186,7 +216,7 @@ fun HomeScreen(
 }
 
 @Serializable
-object HomeScreen
+object HomeRoute
 
 @Serializable
-data class PokemonDetailScreen(val id: Int)
+data class PokemonDetailRoute(val pokemon: Pokemon)
