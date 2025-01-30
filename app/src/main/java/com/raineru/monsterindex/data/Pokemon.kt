@@ -1,9 +1,12 @@
 package com.raineru.monsterindex.data
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Parcelize
 data class Pokemon(
     var page: Int = 0,
 
@@ -12,7 +15,7 @@ data class Pokemon(
 
     @SerialName(value = "url")
     val url: String
-) {
+) : Parcelable {
 
     val name: String
         get() = nameField.replaceFirstChar { it.uppercase() }
@@ -30,3 +33,4 @@ data class Pokemon(
             return id.toIntOrNull() ?: 0
         }
 }
+
