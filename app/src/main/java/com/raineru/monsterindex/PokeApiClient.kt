@@ -5,6 +5,7 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toLowerCase
 import com.raineru.monsterindex.data.Pokemon
 import com.raineru.monsterindex.data.PokemonListResponse
+import com.raineru.monsterindex.model.PokemonInfo
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -36,6 +37,18 @@ class PokeApiClient @Inject constructor(
         } catch (e: IOException) {
             Log.d("PokeApiClient", e.toString())
             return emptyList()
+        }
+    }
+
+    suspend fun getPokemonInfo(id: Int): PokemonInfo? {
+        try {
+            val response: PokemonInfo = client.get(
+                "https://pokeapi.co/api/v2/pokemon/$id"
+            ).body()
+            return response
+        } catch (e: IOException) {
+            Log.d("PokeApiClient", e.toString())
+            return null
         }
     }
 
