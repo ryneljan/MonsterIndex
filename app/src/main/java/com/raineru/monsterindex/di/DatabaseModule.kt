@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.raineru.monsterindex.db.MonsterIndexDatabase
 import com.raineru.monsterindex.db.PokemonDao
+import com.raineru.monsterindex.db.PokemonInfoDao
 import com.raineru.monsterindex.db.StatsResponseConverter
 import com.raineru.monsterindex.db.TypeResponseConverter
 import dagger.Module
@@ -21,6 +22,10 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun providePokemonDao(database: MonsterIndexDatabase): PokemonDao = database.pokemonDao()
+
+    @Provides
+    @Singleton
+    fun providePokemonInfoDao(database: MonsterIndexDatabase): PokemonInfoDao = database.pokemonInfoDao()
 
     @Provides
     @Singleton
