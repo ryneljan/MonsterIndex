@@ -29,3 +29,7 @@ object PokemonInfoEntityMapper {
         )
     }
 }
+
+fun PokemonInfoEntity.asDomain() = PokemonInfoEntityMapper.asDomain(this)
+
+fun PokemonInfo.asEntity() = PokemonInfoEntityMapper.asEntity(this)
