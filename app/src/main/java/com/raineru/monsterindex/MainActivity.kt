@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -88,89 +86,7 @@ class MainActivity : ComponentActivity() {
                         )
                     ) { backStackEntry ->
                         val route: PokemonDetailRoute = backStackEntry.toRoute()
-
-                        val detailsViewModel: DetailsViewModel = hiltViewModel()
-                        val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
-
-                        LaunchedEffect(Unit) {
-                            detailsViewModel.setPokemonId(route.pokemon.id)
-                        }
-
-                        Scaffold(
-                            topBar = {
-                                TopAppBar(
-                                    title = { Text("#${route.pokemon.id}") }
-                                )
-                            }
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(it),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                pokemonInfo?.let { info ->
-
-                                    GlideImage(
-                                        model = route.pokemon.imageUrl,
-                                        contentDescription = route.pokemon.name,
-                                        modifier = Modifier.size(200.dp)
-                                    )
-
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        info.types.forEach { type ->
-                                            FilterChip(
-                                                selected = true,
-                                                onClick = {},
-                                                label = {
-                                                    Text(
-                                                        text = type.type.name.replaceFirstChar { theChar ->
-                                                            theChar.uppercase()
-                                                        }
-                                                    )
-                                                }
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        text = info.name.replaceFirstChar { theChar ->
-                                            theChar.uppercase()
-                                        },
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 28.sp
-                                    )
-
-                                    Spacer(modifier = Modifier.height(16.dp))
-
-                                    Row {
-                                        Text(text = "Weight: ${info.weightInKilogram} KG")
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(text = "Height: ${info.heightInMeter} M")
-                                    }
-
-                                    Spacer(modifier = Modifier.height(32.dp))
-
-                                    Column(
-                                        modifier = Modifier
-                                            .width(300.dp)
-                                    ) {
-                                        Text(
-                                            text = "Base Stats",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 18.sp,
-                                        )
-
-                                        Spacer(modifier = Modifier.height(4.dp))
-
-                                        info.toBaseStatList().forEach { baseStat ->
-                                            BaseStatItem(baseStat = baseStat)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        PokemonDetailScreen(route)
                     }
                 }
             }
@@ -178,38 +94,93 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
+@OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonDetailScreen(
-    pokemon: Pokemon,
+    route: PokemonDetailRoute,
     modifier: Modifier = Modifier
 ) {
-    // TODO fetch detail from the api then cache
-    // TODO create a type converter to store stats and pokemon types
-    // the example from pokedex compose, they store it in json form
-    Card(
-        modifier = modifier,
-        onClick = {
-            Log.d(
-                "MainActivity",
-                "onClick: $pokemon, name: ${pokemon.name}, imageUrl: ${pokemon.imageUrl}, id: ${pokemon.id}"
+    val detailsViewModel: DetailsViewModel = hiltViewModel()
+    val pokemonInfo by detailsViewModel.pokemonInfo.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        detailsViewModel.setPokemonId(route.pokemon.id)
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("#${route.pokemon.id}") }
             )
-        }
+        },
+        modifier = modifier
     ) {
         Column(
             modifier = Modifier
-                .size(400.dp)
-                .padding(8.dp),
+                .fillMaxSize()
+                .padding(it),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            GlideImage(
-                model = pokemon.imageUrl,
-                contentDescription = pokemon.name,
-                modifier = Modifier.background(Color.Red)
-            )
-            Text(
-                pokemon.name,
-            )
+            pokemonInfo?.let { info ->
+
+                GlideImage(
+                    model = route.pokemon.imageUrl,
+                    contentDescription = route.pokemon.name,
+                    modifier = Modifier.size(200.dp)
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    info.types.forEach { type ->
+                        FilterChip(
+                            selected = true,
+                            onClick = {},
+                            label = {
+                                Text(
+                                    text = type.type.name.replaceFirstChar { theChar ->
+                                        theChar.uppercase()
+                                    }
+                                )
+                            }
+                        )
+                    }
+                }
+                Text(
+                    text = info.name.replaceFirstChar { theChar ->
+                        theChar.uppercase()
+                    },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row {
+                    Text(text = "Weight: ${info.weightInKilogram} KG")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Height: ${info.heightInMeter} M")
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Column(
+                    modifier = Modifier
+                        .width(300.dp)
+                ) {
+                    Text(
+                        text = "Base Stats",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    info.toBaseStatList().forEach { baseStat ->
+                        BaseStatItem(baseStat = baseStat)
+                    }
+                }
+            }
         }
     }
 }
