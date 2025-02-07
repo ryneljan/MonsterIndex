@@ -27,6 +27,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -34,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,7 +62,6 @@ import kotlin.reflect.typeOf
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -215,71 +216,72 @@ fun HomeScreen(
     onNavigateToDetail: (Pokemon) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Monster Index") }
+                title = { Text("Monster Index") },
+                scrollBehavior = scrollBehavior
             )
         }
-    ) {
+    ) { padding ->
         val homeViewModel: HomeViewModel = hiltViewModel()
         val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
         val isLoading by homeViewModel.isLoading.collectAsStateWithLifecycle()
 
-        Column(modifier = Modifier.padding(it)) {
-            val lazyGridState = rememberLazyGridState()
-            val threshold = 16
-            val shouldLoadMore = remember {
-                derivedStateOf {
-                    val lastVisibleItem = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()
-                        ?: return@derivedStateOf false
+        val lazyGridState = rememberLazyGridState()
+        val threshold = 16
+        val shouldLoadMore = remember {
+            derivedStateOf {
+                val lastVisibleItem = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()
+                    ?: return@derivedStateOf false
 
-                    lastVisibleItem.index >= lazyGridState.layoutInfo.totalItemsCount - 1 - threshold
-                }
+                lastVisibleItem.index >= lazyGridState.layoutInfo.totalItemsCount - 1 - threshold
             }
+        }
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(8.dp),
-                state = lazyGridState
-            ) {
-                items(pokemonList, key = { pokemon -> pokemon.name }) {
-                    Card(
-                        onClick = {
-                            onNavigateToDetail(it)
-                        },
-//                                    modifier = Modifier.wrapContentSize()
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(8.dp),
+            state = lazyGridState,
+            modifier = Modifier.padding(padding)
+        ) {
+            items(pokemonList, key = { pokemon -> pokemon.name }) {
+                Card(
+                    onClick = {
+                        onNavigateToDetail(it)
+                    },
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(8.dp)
-//                                            .background(Color.Yellow)
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            GlideImage(
-                                model = it.imageUrl,
-                                contentDescription = it.name,
-                                modifier = Modifier.size(100.dp)
-                            )
-                            Text(
-                                it.name,
-                            )
-                        }
+                        GlideImage(
+                            model = it.imageUrl,
+                            contentDescription = it.name,
+                            modifier = Modifier.size(100.dp)
+                        )
+                        Text(
+                            it.name,
+                        )
                     }
                 }
-                if (shouldLoadMore.value && !isLoading) {
-                    item {
-                        CircularProgressIndicator()
+            }
+            if (shouldLoadMore.value && !isLoading) {
+                item {
+                    CircularProgressIndicator()
 
-                        LaunchedEffect(key1 = shouldLoadMore) {
-//                            onLoadMore()
-                            Log.d("MainActivity", "loadMore()")
-                            homeViewModel.fetchNextPokemonList()
-                        }
+                    LaunchedEffect(key1 = shouldLoadMore) {
+                        Log.d("MainActivity", "loadMore()")
+                        homeViewModel.fetchNextPokemonList()
                     }
                 }
             }
