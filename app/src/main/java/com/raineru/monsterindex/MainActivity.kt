@@ -1,10 +1,13 @@
 package com.raineru.monsterindex
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,12 +21,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Scaffold
@@ -32,9 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -48,11 +47,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.raineru.monsterindex.data.Pokemon
 import com.raineru.monsterindex.data.PokemonType
 import com.raineru.monsterindex.data.toBaseStatList
+import com.raineru.monsterindex.db.asDomain
 import com.raineru.monsterindex.ui.BaseStatItem
 import com.raineru.monsterindex.ui.DetailsViewModel
 import com.raineru.monsterindex.ui.HomeViewModel
@@ -64,32 +66,41 @@ import kotlin.reflect.typeOf
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MonsterIndexTheme {
-                val navController = rememberNavController()
+                SharedTransitionLayout {
+                    val navController = rememberNavController()
 
-                NavHost(
-                    navController = navController,
-                    startDestination = HomeRoute
-                ) {
-                    composable<HomeRoute> {
-                        HomeScreen(
-                            onNavigateToDetail = {
-                                navController.navigate(PokemonDetailRoute(it))
-                            }
-                        )
-                    }
+                    NavHost(
+                        navController = navController,
+                        startDestination = HomeRoute
+                    ) {
+                        composable<HomeRoute> {
+                            HomeScreen(
+                                onNavigateToDetail = {
+                                    navController.navigate(PokemonDetailRoute(it))
+                                },
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                animatedContentScope = this@composable
+                            )
+                        }
 
-                    composable<PokemonDetailRoute>(
-                        typeMap = mapOf(
-                            typeOf<Pokemon>() to PokemonType
-                        )
-                    ) { backStackEntry ->
-                        val route: PokemonDetailRoute = backStackEntry.toRoute()
-                        PokemonDetailScreen(route)
+                        composable<PokemonDetailRoute>(
+                            typeMap = mapOf(
+                                typeOf<Pokemon>() to PokemonType
+                            )
+                        ) { backStackEntry ->
+                            val route: PokemonDetailRoute = backStackEntry.toRoute()
+                            PokemonDetailScreen(
+                                route = route,
+                                sharedTransitionScope = this@SharedTransitionLayout,
+                                animatedContentScope = this@composable
+                            )
+                        }
                     }
                 }
             }
@@ -97,10 +108,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class)
+// TODO image animation goes above the system bars when transitioning from home to details screen
+@OptIn(
+    ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
 fun PokemonDetailScreen(
     route: PokemonDetailRoute,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     modifier: Modifier = Modifier
 ) {
     val detailsViewModel: DetailsViewModel = hiltViewModel()
@@ -125,14 +142,33 @@ fun PokemonDetailScreen(
                 .verticalScroll(state = rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            pokemonInfo?.let { info ->
-
+            with(sharedTransitionScope) {
                 GlideImage(
                     model = route.pokemon.imageUrl,
                     contentDescription = route.pokemon.name,
-                    modifier = Modifier.size(200.dp)
+                    modifier = Modifier
+                        .sharedElement(
+                            rememberSharedContentState(key = "${route.pokemon.name}-image"),
+                            animatedVisibilityScope = animatedContentScope
+                        )
+                        .size(200.dp)
                 )
 
+                Text(
+                    text = route.pokemon.name.replaceFirstChar { theChar ->
+                        theChar.uppercase()
+                    },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    modifier = Modifier
+                        .sharedBounds(
+                            rememberSharedContentState(key = "${route.pokemon.name}-text"),
+                            animatedVisibilityScope = animatedContentScope
+                        )
+                )
+            }
+
+            pokemonInfo?.let { info ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -150,13 +186,6 @@ fun PokemonDetailScreen(
                         )
                     }
                 }
-                Text(
-                    text = info.name.replaceFirstChar { theChar ->
-                        theChar.uppercase()
-                    },
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp
-                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -213,10 +242,15 @@ fun CardPreview() {
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalGlideComposeApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
 fun HomeScreen(
     onNavigateToDetail: (Pokemon) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     modifier: Modifier = Modifier
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -233,19 +267,10 @@ fun HomeScreen(
         }
     ) { padding ->
         val homeViewModel: HomeViewModel = hiltViewModel()
-        val pokemonList by homeViewModel.pokemonList.collectAsStateWithLifecycle()
-        val isLoading by homeViewModel.isLoading.collectAsStateWithLifecycle()
+
+        val pokemonListViaPaging = homeViewModel.pokemonListViaPaging.collectAsLazyPagingItems()
 
         val lazyGridState = rememberLazyGridState()
-        val threshold = 16
-        val shouldLoadMore = remember {
-            derivedStateOf {
-                val lastVisibleItem = lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()
-                    ?: return@derivedStateOf false
-
-                lastVisibleItem.index >= lazyGridState.layoutInfo.totalItemsCount - 1 - threshold
-            }
-        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -255,36 +280,48 @@ fun HomeScreen(
             state = lazyGridState,
             modifier = Modifier.padding(padding)
         ) {
-            items(pokemonList, key = { pokemon -> pokemon.name }) {
-                Card(
-                    onClick = {
-                        onNavigateToDetail(it)
-                    },
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        GlideImage(
-                            model = it.imageUrl,
-                            contentDescription = it.name,
-                            modifier = Modifier.size(100.dp)
-                        )
-                        Text(
-                            it.name,
-                        )
-                    }
+            items(
+                count = pokemonListViaPaging.itemCount,
+                key = pokemonListViaPaging.itemKey {
+                    it.id
                 }
-            }
-            if (shouldLoadMore.value && !isLoading) {
-                item {
-                    CircularProgressIndicator()
+            ) {
+                val pokemon = pokemonListViaPaging[it]
+                pokemon?.let { pokemonEntity ->
+                    val domain = pokemonEntity.asDomain()
 
-                    LaunchedEffect(key1 = shouldLoadMore) {
-                        Log.d("MainActivity", "loadMore()")
-                        homeViewModel.fetchNextPokemonList()
+                    Card(
+                        onClick = {
+                            onNavigateToDetail(domain)
+                        },
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            with(sharedTransitionScope) {
+                                GlideImage(
+                                    model = domain.imageUrl,
+                                    contentDescription = domain.name,
+                                    modifier = Modifier
+                                        .sharedElement(
+                                            rememberSharedContentState(key = "${domain.name}-image"),
+                                            animatedVisibilityScope = animatedContentScope
+                                        )
+                                        .size(100.dp)
+                                )
+                                Text(
+                                    "${pokemonEntity.id}: ${pokemonEntity.name}",
+                                    modifier = Modifier
+                                        .sharedBounds(
+                                            rememberSharedContentState(key = "${domain.name}-text"),
+                                            animatedVisibilityScope = animatedContentScope
+                                        )
+                                )
+                            }
+                        }
                     }
                 }
             }
