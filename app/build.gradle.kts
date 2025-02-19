@@ -90,5 +90,10 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
 
     implementation(libs.navigation.compose)
-    implementation((libs.kotlinx.serialization.json))
+    implementation(libs.kotlinx.serialization.json)
+
+    // Paging
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
+    implementation(libs.room.paging)
 }

@@ -6,10 +6,10 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.9.3"
-composeBom = "2024.11.00"
+activityCompose = "1.10.0"
+composeBom = "2025.02.00"
 ktor = "3.0.1"
-hilt = "2.51.1"
+hilt = "2.52"
 slf4j = "1.7.36"
 simpleSlf4j = "2.0.16"
 room = "2.6.1"
@@ -17,8 +17,9 @@ hiltNavigationCompose = "1.2.0"
 ksp = "2.0.21-1.0.27"
 glide = "1.0.0-beta01"
 coroutines-test = "1.10.1"
-navigationVersion = "2.8.5"
+navigationVersion = "2.8.7"
 kotlinxSerializationJson = "1.7.3"
+pagingVersion = "3.3.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,6 +53,9 @@ glide = { module = "com.github.bumptech.glide:compose", version.ref = "glide" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-test" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationVersion" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "pagingVersion" }
+paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingVersion" }
+room-paging = { module = "androidx.room:room-paging", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
