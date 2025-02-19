@@ -5,32 +5,36 @@ import com.raineru.monsterindex.db.entity.PokemonEntity
 
 object PokemonEntityMapper {
 
-    fun asEntity(domain: List<Pokemon>): List<PokemonEntity> {
-        return domain.map {
-            PokemonEntity(
-                page = it.page,
-                name = it.name,
-                url = it.url,
-                id = it.id
-            )
-        }
+    fun asEntity(domain: Pokemon): PokemonEntity {
+        return PokemonEntity(
+            page = domain.page,
+            name = domain.name,
+            url = domain.url,
+            id = domain.id
+        )
     }
 
-    fun asDomain(entity: List<PokemonEntity>): List<Pokemon> {
-        return entity.map {
-            Pokemon(
-                page = it.page,
-                nameField = it.name,
-                url = it.url,
-            )
-        }
+    fun asDomain(entity: PokemonEntity): Pokemon {
+        return Pokemon(
+            page = entity.page,
+            nameField = entity.name,
+            url = entity.url,
+        )
     }
 }
 
-fun List<PokemonEntity>.asDomain(): List<Pokemon> {
+fun PokemonEntity.asDomain(): Pokemon {
     return PokemonEntityMapper.asDomain(this)
 }
 
-fun List<Pokemon>.asEntity(): List<PokemonEntity> {
+fun Pokemon.asEntity(): PokemonEntity {
     return PokemonEntityMapper.asEntity(this)
+}
+
+fun List<PokemonEntity>.asDomain(): List<Pokemon> {
+    return this.map { PokemonEntityMapper.asDomain(it) }
+}
+
+fun List<Pokemon>.asEntity(): List<PokemonEntity> {
+    return this.map { PokemonEntityMapper.asEntity(it) }
 }
