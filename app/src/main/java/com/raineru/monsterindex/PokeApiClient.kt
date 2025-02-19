@@ -40,6 +40,18 @@ class PokeApiClient @Inject constructor(
         }
     }
 
+    suspend fun getPokemonListByIndex(index: Int): List<Pokemon> {
+        try {
+            val response: PokemonListResponse = client.get(
+                "https://pokeapi.co/api/v2/pokemon?offset=$index&limit=$PAGING_SIZE"
+            ).body()
+            return response.results
+        } catch (e: IOException) {
+            Log.d("PokeApiClient", e.toString())
+            return emptyList()
+        }
+    }
+
     suspend fun getPokemonInfo(id: Int): PokemonInfo? {
         try {
             val response: PokemonInfo = client.get(
@@ -53,6 +65,6 @@ class PokeApiClient @Inject constructor(
     }
 
     companion object {
-        private const val PAGING_SIZE = 20
+        const val PAGING_SIZE = 20
     }
 }
