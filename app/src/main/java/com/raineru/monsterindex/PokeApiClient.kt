@@ -65,6 +65,6 @@ class PokeApiClient @Inject constructor(
     }
 
     companion object {
-        const val PAGING_SIZE = 20
+        const val PAGING_SIZE = 100
     }
 }
