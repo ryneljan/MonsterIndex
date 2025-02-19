@@ -313,7 +313,7 @@ fun HomeScreen(
                                         .size(100.dp)
                                 )
                                 Text(
-                                    "${pokemonEntity.id}: ${pokemonEntity.name}",
+                                    pokemonEntity.name,
                                     modifier = Modifier
                                         .sharedBounds(
                                             rememberSharedContentState(key = "${domain.name}-text"),
